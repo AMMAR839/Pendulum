@@ -127,11 +127,11 @@ def read_control_status(ser, callback=None, ack_callback=None, reset_ack_callbac
     HEADER_ACK = b'\xAA\xDD'
     HEADER_RESET = b'\xAA\xEE'
     
-    status_total_len = 4 + 60 + 2  # header + payload + crc = 58
+    status_total_len = 4 + 68 + 2  # header + payload + crc = 58
     ack_total_len = 2 + 20 + 2     # header + payload + crc = 24
     reset_total_len = 2 + 1 + 2    # header + payload + crc = 5
     
-    fmt_status = "<Iddddddd"   # uint32 + 7x double
+    fmt_status = "<Idddddddd"   # uint32 + 7x double
     fmt_ack = "<fffff"        # 5x float
 
     buffer = bytearray()
@@ -142,6 +142,7 @@ def read_control_status(ser, callback=None, ack_callback=None, reset_ack_callbac
             time.sleep(0.01)
             continue
         buffer.extend(chunk)
+        print(f"[RX] Received {len(chunk)} bytes, buffer size: {len(buffer)} bytes")
 
         # Process buffer
         while len(buffer) >= 4:  # minimal header length
@@ -178,10 +179,14 @@ def read_control_status(ser, callback=None, ack_callback=None, reset_ack_callbac
                 
                 # Parse data
                 data = pkt[4:-2]
+                
+                print (pkt)
+                print (len(data))
                 unpacked = struct.unpack(fmt_status, data)
                 logtick = unpacked[0]
                 degree, cmX, setspeed = unpacked[1:4]
-                r1, r2, r3, r4 = unpacked[4:8] #?
+                r1, r2, r3, r4, r5 = unpacked[4:9] #?
+                print (f"r5={r5}")
                 
                 if debug:
                     print(f"[RX] tick={logtick:8d} deg={degree:8.3f} "
