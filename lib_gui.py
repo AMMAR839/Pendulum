@@ -170,7 +170,7 @@ class XboxButton:
         pygame.draw.circle(screen, COLOR_TEXT, (self.cx, self.cy), self.radius, 2)
 
         label_surf = font_big.render(self.label, True, COLOR_TEXT)
-        label_rect = label_surf.get_rect(center=(self.cx, self.cy - 6))
+        label_rect = label_surf.get_rect(center=(self.cx, self.cy))
         screen.blit(label_surf, label_rect)
 
         cap_surf = font_small.render(self.caption, True, COLOR_TEXT)
@@ -282,10 +282,12 @@ class PendulumGUI:
 
         # Xbox buttons area
         pad_center_x = panel_x + field_w // 2
-        pad_center_y = y + S(STARTRESET_Y_GAP_BASE + 120)
+        xbox_y = S(30)
+        pad_center_y = y + S(STARTRESET_Y_GAP_BASE + 120) + xbox_y
+
 
         r = S(24)
-        gap = S(50)
+        gap = S(65)
 
         self.xbox_buttons = {
             "Y": XboxButton(

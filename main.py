@@ -9,7 +9,7 @@ from threading import Lock
 from serial.tools import list_ports
 
 from lib_stick import init_joystick, joystick_sender
-from lib_com import open_serial,scan_ports,read_control_status, send_gains, send_reset
+from lib_com import open_serial,read_control_status, send_gains, send_reset
 from lib_data import DataLogger
 from lib_udp import UDPBroadcaster
 
@@ -18,7 +18,7 @@ from lib_gui import PendulumGUI
 # ============================================================
 # KONFIGURASI
 # ============================================================
-PORT = "COM4"
+PORT = "COM10"
 BAUD = 115200
 FPS = 50
 
@@ -121,26 +121,6 @@ class PendulumMonitor:
 			}
 		self.mode = 0
 		
-		# serial port management
-		# self.avaible_ports = []
-		# self.selected_port = None
-		# self.port_dropdown_open = False
-		# self.serial_connected = False
-
-		# Auto Detect Saat Startup
-		# self.scan_serial_ports(auto_select=True)
-	
-	def scan_serial_ports(self, auto_select=False):
-		port = list_ports.comports()
-		#simpan daftar port yang tersedia
-		self.avaible_ports = [p.device for p in port]
-		#jika auto_select diaktifkan, pilih port pertama yang tersedia
-		if auto_select and self.selected_port is None:
-			for p in port:
-				desc = p.description.lower()
-				if "STMicroelectronics" in desc :
-					self.selected_port = p.device
-					return
 
 	def setup_serial(self):
 		try:
@@ -224,7 +204,7 @@ class PendulumMonitor:
 			self.r1_hist.append(float(r1))
 			self.theta_dot_hist.append(float(theta_dot))
 			self.x_center_hist.append(float(x_center))
-			self.x_mode_hist.append(float(mode))
+			
 			
 			degree0=float(degree+180)	
 			if(degree0>180):
@@ -361,7 +341,7 @@ class PendulumMonitor:
 		self.udp_broadcaster.toggle()
 		return self.udp_broadcaster.enabled
 	
-	    # =========================
+	# =========================
     # XBOX CONTROL ACTIONS
     # =========================
 	def homing(self):

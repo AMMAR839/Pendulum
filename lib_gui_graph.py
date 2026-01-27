@@ -232,6 +232,10 @@ class GraphView:
 		del self.buf_cmX[:len(self.buf_cmX)]
 		del self.buf_deg[:len(self.buf_deg)]
 		del self.buf_deg0[:len(self.buf_deg0)]
+		del self.buf_setspeed[:len(self.buf_setspeed)]
+		del self.buf_r1[:len(self.buf_r1)]
+		del self.buf_theta_dot[:len(self.buf_theta_dot)]
+		del self.buf_x_center[:len(self.buf_x_center)]
 		self.buf_t_raw.clear()
 		self.buf_cmX.clear()
 		self.buf_deg.clear()
@@ -249,6 +253,11 @@ class GraphView:
 		cmX = data.get("cmX", [])
 		deg = data.get("degree", [])
 		deg0 = data.get("degree0", [])
+		setspeed = data.get("setspeed", [])
+		r1 = data.get("r1", [])
+		theta_dot = data.get("theta_dot", [])
+		x_center = data.get("x_center", [])
+
 		n = min(len(t_raw), len(cmX), len(deg), len(deg0))
 
 		# clear view buffers
@@ -256,6 +265,11 @@ class GraphView:
 		self.buf_cmX.clear()
 		self.buf_deg.clear()
 		self.buf_deg0.clear()
+		self.buf_setspeed.clear()
+		self.buf_r1.clear()
+		self.buf_theta_dot.clear()
+		self.buf_x_center.clear()
+		
 
 		# set source cursor to current tail
 		self._src_last_n = n
@@ -342,7 +356,6 @@ class GraphView:
 		txt_max = self.font_small.render(f"{ymax:.2f}", True, COLOR_TEXT)
 		txt_min = self.font_small.render(f"{ymin:.2f}", True, COLOR_TEXT)
 
-		# gambar di sumbu Y kiri (seperti MATLAB)
 		screen.blit(
 			txt_max,
 			(rect.x - txt_max.get_width() - 6, py_max - 8)
