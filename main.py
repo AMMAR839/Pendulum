@@ -18,7 +18,7 @@ from lib_gui import PendulumGUI
 # ============================================================
 # KONFIGURASI
 # ============================================================
-PORT = "COM10"
+PORT = "COM4"
 BAUD = 115200
 FPS = 50
 
@@ -119,6 +119,7 @@ class PendulumMonitor:
 				"cmX": 0.0,
 				"theta": 0.0,
 			}
+		self.mode = 0
 		
 		# serial port management
 		# self.avaible_ports = []
@@ -197,7 +198,7 @@ class PendulumMonitor:
 		self.x_center_hist.clear()
 
 	def on_control_status(self, sample_tuple):
-		logtick, degree, cmX, setspeed, r1, theta_dot, theta, x_center = sample_tuple
+		logtick, degree, cmX, setspeed, r1, theta_dot, theta, x_center, mode = sample_tuple
 		gv = getattr(self.gui, "graph_view", None)
 		with state_lock:
 			pendulum_state["cmX"] = cmX
@@ -222,6 +223,7 @@ class PendulumMonitor:
 			self.r1_hist.append(float(r1))
 			self.theta_dot_hist.append(float(theta_dot))
 			self.x_center_hist.append(float(x_center))
+			self.x_mode_hist.append(float(mode))
 			
 			degree0=float(degree+180)	
 			if(degree0>180):
@@ -357,6 +359,26 @@ class PendulumMonitor:
 	def toggle_udp(self):
 		self.udp_broadcaster.toggle()
 		return self.udp_broadcaster.enabled
+	
+	    # =========================
+    # XBOX CONTROL ACTIONS
+    # =========================
+	def homing(self):
+		print("[XBOX] HOMING")
+        # TODO: kirim command homing ke controller
+	
+	def finish(self):
+		print("[XBOX] FINISH")
+        # TODO: stop system / end routine
+
+	def balance(self):
+		print("[XBOX] BALANCE")
+        # TODO: switch to balance mode
+
+	def swing_up(self):
+		print("[XBOX] SWING UP")
+        # TODO: trigger swing-up control
+
 
 	def run(self):
 		if not self.setup_serial():
@@ -396,6 +418,12 @@ class PendulumMonitor:
 					"toggle_udp": self.toggle_udp,
 					"start_graph": self.start_graph,
 					"stop_graph": self.stop_graph,
+
+					"Y": self.homing,
+					"B": self.finish,
+					"A": self.balance,
+					"X": self.swing_up,
+
 				}
 			)
 

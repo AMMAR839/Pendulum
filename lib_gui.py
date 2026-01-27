@@ -155,6 +155,36 @@ class InputField:
         except ValueError:
             return default
 
+class XboxButton:
+    def __init__(self, center, radius, label, caption, color):
+        self.cx, self.cy = center
+        self.radius = radius
+        self.label = label
+        self.caption = caption
+        self.color = color
+        self.hovered = False
+
+    def draw(self, screen, font_big, font_small):
+        color = tuple(min(255, c + 30) for c in self.color) if self.hovered else self.color
+        pygame.draw.circle(screen, color, (self.cx, self.cy), self.radius)
+        pygame.draw.circle(screen, COLOR_TEXT, (self.cx, self.cy), self.radius, 2)
+
+        label_surf = font_big.render(self.label, True, COLOR_TEXT)
+        label_rect = label_surf.get_rect(center=(self.cx, self.cy - 6))
+        screen.blit(label_surf, label_rect)
+
+        cap_surf = font_small.render(self.caption, True, COLOR_TEXT)
+        cap_rect = cap_surf.get_rect(center=(self.cx, self.cy + self.radius + 14))
+        screen.blit(cap_surf, cap_rect)
+
+    def update_hover(self, pos):
+        dx = pos[0] - self.cx
+        dy = pos[1] - self.cy
+        self.hovered = (dx*dx + dy*dy) <= self.radius*self.radius
+
+    def is_clicked(self, pos):
+        return self.hovered
+
 
 class PendulumGUI:
     def __init__(self, screen, window_w, window_h, main_w, panel_w, fonts, x_min_cm, x_max_cm, state_ref, state_lock: Lock):
@@ -250,6 +280,33 @@ class PendulumGUI:
         self.mode_group.set_active_index(1)
         self.active_mode = MODE_GRAPH
 
+        # Xbox buttons area
+        pad_center_x = panel_x + field_w // 2
+        pad_center_y = y + S(STARTRESET_Y_GAP_BASE + 120)
+
+        r = S(24)
+        gap = S(48)
+
+        self.xbox_buttons = {
+            "Y": XboxButton(
+                (pad_center_x, pad_center_y - gap),
+                r, "Y", "HOMING", (245, 197, 66)
+            ),
+            "B": XboxButton(
+                (pad_center_x + gap, pad_center_y),
+                r, "B", "FINISH", (220, 80, 80)
+            ),
+            "A": XboxButton(
+                (pad_center_x, pad_center_y + gap),
+                r, "A", "BALANCE", (80, 180, 120)
+            ),
+            "X": XboxButton(
+                (pad_center_x - gap, pad_center_y),
+                r, "X", "SWING UP", (80, 150, 220)
+            ),
+        }
+
+
     def set_gains_defaults(self, gains_dict):
         for k, v in gains_dict.items():
             if k in self.inputs:
@@ -274,6 +331,9 @@ class PendulumGUI:
         self.btn_udp.update_hover(mouse_pos)
         self.btn_mode_2d.update_hover(mouse_pos)
         self.btn_mode_graph.update_hover(mouse_pos)
+
+        for btn in self.xbox_buttons.values():
+            btn.update_hover(mouse_pos)
 
     def handle_events(self, events, callbacks, graph_data_provider=None):
         """
@@ -314,6 +374,10 @@ class PendulumGUI:
                 # 	self.active_mode = MODE_2D_SIM
                 # elif self.btn_mode_graph.is_clicked(mouse_pos):
                 # 	self.active_mode = MODE_GRAPH
+                for key, btn in self.xbox_buttons.items():
+                    if btn.is_clicked(mouse_pos):
+                        if key in callbacks:
+                            callbacks[key]()  # call the corresponding action
 
     def draw(self, context, graph_data):
         self.screen.fill(COLOR_BG)
@@ -348,6 +412,9 @@ class PendulumGUI:
         self.btn_apply.draw(self.screen, self.font_medium)
         self.btn_start.draw(self.screen, self.font_medium)
         self.btn_reset.draw(self.screen, self.font_medium)
+
+        for btn in self.xbox_buttons.values():
+            btn.draw(self.screen, self.font_medium, self.font_small)
 
         # acks
         if context.get("gains_sent", False):
