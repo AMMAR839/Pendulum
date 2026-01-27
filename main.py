@@ -6,9 +6,10 @@ import threading
 import pygame
 import math
 from threading import Lock
+from serial.tools import list_ports
 
 from lib_stick import init_joystick, joystick_sender
-from lib_com import open_serial, read_control_status, send_gains, send_reset
+from lib_com import open_serial,scan_ports,read_control_status, send_gains, send_reset
 from lib_data import DataLogger
 from lib_udp import UDPBroadcaster
 
@@ -105,6 +106,10 @@ class PendulumMonitor:
 		self.cmX_hist = []
 		self.degree_hist = []
 		self.degree0_hist = []
+		self.setspeed_hist = []
+		self.r1_hist = []
+		self.theta_dot_hist = []
+		self.x_center_hist = []
 		self.max_hist = 1000
 		self.ctx = {
 				"is_running": 0,
@@ -114,6 +119,28 @@ class PendulumMonitor:
 				"cmX": 0.0,
 				"theta": 0.0,
 			}
+		
+		# serial port management
+		# self.avaible_ports = []
+		# self.selected_port = None
+		# self.port_dropdown_open = False
+		# self.serial_connected = False
+
+		# Auto Detect Saat Startup
+		# self.scan_serial_ports(auto_select=True)
+	
+	def scan_serial_ports(self, auto_select=False):
+		port = list_ports.comports()
+		#simpan daftar port yang tersedia
+		self.avaible_ports = [p.device for p in port]
+		#jika auto_select diaktifkan, pilih port pertama yang tersedia
+		if auto_select and self.selected_port is None:
+			for p in port:
+				desc = p.description.lower()
+				if "STMicroelectronics" in desc :
+					self.selected_port = p.device
+					return
+
 	def setup_serial(self):
 		try:
 			self.serial = open_serial(PORT, BAUD)
@@ -145,12 +172,18 @@ class PendulumMonitor:
 		except Exception as e:
 			print(f"Failed to open serial: {e}")
 			return False
+		
 	def start_graph(self):
 		self.graph_enabled = True
 		self.t_raw.clear()
 		self.cmX_hist.clear()
 		self.degree_hist.clear()
 		self.degree0_hist.clear()
+		self.setspeed_hist.clear()
+		self.r1_hist.clear()
+		self.theta_dot_hist.clear()
+		self.x_center_hist.clear()
+		
 
 	def stop_graph(self):
 		self.graph_enabled = False
@@ -158,6 +191,11 @@ class PendulumMonitor:
 		self.cmX_hist.clear()
 		self.degree_hist.clear()
 		self.degree0_hist.clear()
+		self.setspeed_hist.clear()
+		self.r1_hist.clear()
+		self.theta_dot_hist.clear()
+		self.x_center_hist.clear()
+		
 	def on_control_status(self, sample_tuple):
 		logtick, degree, cmX, setspeed, r1, theta_dot, theta, x_center = sample_tuple
 		gv = getattr(self.gui, "graph_view", None)
@@ -358,11 +396,15 @@ class PendulumMonitor:
 
 			}
 			graph_data = {
-				"t_raw": self.t_raw,
-				"cmX": self.cmX_hist,
-				"degree": self.degree_hist,
-				"degree0": self.degree0_hist
-			}
+					"t_raw": self.t_raw,
+					"cmX": self.cmX_hist,
+					"degree": self.degree_hist,
+					"degree0": self.degree0_hist,
+					"setspeed": self.setspeed_hist,
+					"r1": self.r1_hist,
+					"theta_dot": self.theta_dot_hist,
+					"x_center": self.x_center_hist
+				}
 			self.gui.draw(self.ctx, graph_data)
 
 			self.clock.tick(FPS)

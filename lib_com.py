@@ -1,11 +1,31 @@
 import serial
 import struct
 import time
+from serial.tools import list_ports
+
 
 
 def open_serial(port: str, baud: int, timeout: float = 0.0):
     """Buka port serial."""
     return serial.Serial(port, baud, timeout=timeout)
+
+def scan_ports():
+    ports = []
+    stm_port = None
+    for p in list_ports.comports():
+        ports.append(p.device)
+        
+        desc = (p.description or "").lower()
+        manu = (p.manufacturer or "").lower()
+        
+        if (
+            "stmicroelectronics" in desc
+            or "stmicroelectronics" in manu
+            or p.vid == 0x0483
+        ):
+            stm_port = p.device
+
+    return ports, stm_port
 
 
 def make_packet(seq, ax, ay, rx, ry, buttons):

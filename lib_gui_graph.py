@@ -194,8 +194,9 @@ class GraphView:
 
 		dd_w = int(left_w * 0.22)
 		dd_h = 28
-		self.dd1 = Dropdown(pygame.Rect(self.rect_g1.right - dd_w - 10, self.rect_g1.y + 8, dd_w, dd_h), ["cmX", "degree","degree0"], "cmX")
-		self.dd2 = Dropdown(pygame.Rect(self.rect_g2.right - dd_w - 10, self.rect_g2.y + 8, dd_w, dd_h), ["cmX", "degree","degree0"], "degree0")
+		signals = ["cmX", "degree","degree0", "setspeed", "r1", "theta_dot", "x_center"]
+		self.dd1 = Dropdown(pygame.Rect(self.rect_g1.right - dd_w - 10, self.rect_g1.y + 8, dd_w, dd_h), signals, "cmX")
+		self.dd2 = Dropdown(pygame.Rect(self.rect_g2.right - dd_w - 10, self.rect_g2.y + 8, dd_w, dd_h), signals, "degree0")
 
 		reg_dd_w = int(reg_size * 0.58)
 		self.dd_reg_x = Dropdown(pygame.Rect(self.rect_reg.x + 10, self.rect_reg.y + 8, reg_dd_w, dd_h), ["sin(degree)"], "sin(degree)")
@@ -214,6 +215,10 @@ class GraphView:
 		self.buf_cmX = []
 		self.buf_deg = []
 		self.buf_deg0 = []
+		self.buf_setspeed = []
+		self.buf_r1 = []
+		self.buf_theta_dot = []
+		self.buf_x_center = []
 		# sliding window (opsi A): keep last N points for display
 		self.max_points = 3000
 
@@ -231,6 +236,10 @@ class GraphView:
 		self.buf_cmX.clear()
 		self.buf_deg.clear()
 		self.buf_deg0.clear()
+		self.buf_setspeed.clear()
+		self.buf_r1.clear()
+		self.buf_theta_dot.clear()
+		self.buf_x_center.clear()
 		self.last_a = 0.0
 		self.last_b = 0.0
 
@@ -388,6 +397,11 @@ class GraphView:
 		del self.buf_cmX[:cut]
 		del self.buf_deg[:cut]
 		del self.buf_deg0[:cut]
+		del self.buf_setspeed[:cut]
+		del self.buf_r1[:cut]
+		del self.buf_theta_dot[:cut]
+		del self.buf_x_center[:cut]
+
 
 	def _capture_if_running(self, data):
 		if not self.running:
@@ -396,7 +410,17 @@ class GraphView:
 		cmX = data.get("cmX", [])
 		deg = data.get("degree", [])
 		deg0 = data.get("degree0", [])
-		n = min(len(t_raw), len(cmX), len(deg))
+		setspeed = data.get("setspeed", [])
+		r1 = data.get("r1", [])
+		theta_dot = data.get("theta_dot", [])
+		x_center = data.get("x_center", [])
+
+		n = min(
+			len(t_raw), len(cmX), len(deg), len(deg0),
+			len(setspeed), len(r1),
+			len(theta_dot), len(x_center)
+		)
+
 		if n <= self._src_last_n:
 			return
 		new_slice = slice(self._src_last_n, n)
@@ -404,7 +428,30 @@ class GraphView:
 		self.buf_cmX.extend(cmX[new_slice])
 		self.buf_deg.extend(deg[new_slice])
 		self.buf_deg0.extend(deg0[new_slice])
+		self.buf_setspeed.extend(setspeed[new_slice])
+		self.buf_r1.extend(r1[new_slice])
+		self.buf_theta_dot.extend(theta_dot[new_slice])
+		self.buf_x_center.extend(x_center[new_slice])
 		self._src_last_n = n
+
+	# helper to pick signal buffer and label based on dropdown key
+	def _pick_signal(self, key):
+		if key == "cmX":
+			return self.buf_cmX, "cmX vs time"
+		if key == "degree":
+			return self.buf_deg, "degree vs time"
+		if key == "degree0":
+			return self.buf_deg0, "degree0 vs time"
+		if key == "setspeed":
+			return self.buf_setspeed, "setspeed vs time"
+		if key == "theta_dot":
+			return self.buf_theta_dot, "theta_dot vs time"
+		if key == "x_center":
+			return self.buf_x_center, "x_center vs time"
+		if key == "r1":
+			return self.buf_r1, "r1 (state) vs time"
+		return [], "unknown"
+
 
 	def draw(self, screen, data):
 		# data expected: { "t_raw":[], "cmX":[], "degree":[] }
@@ -436,27 +483,10 @@ class GraphView:
 		cmX = self.buf_cmX
 		deg = self.buf_deg
 		deg0 = self.buf_deg0
-		# time-series selections
-		if self.dd1.key == "cmX":
-			y1 = cmX
-			l1 = "cmX vs time"
-		elif self.dd1.key=="degree"	:
-			y1 = deg
-			l1 = "degree vs time"
-		else	:
-			y1 = deg0	
-			l1 = "degree0 vs time"	
+		
+		y1, l1 = self._pick_signal(self.dd1.key)
+		y2, l2 = self._pick_signal(self.dd2.key)
 
-		if self.dd2.key == "cmX":
-			y2 = cmX
-			l2 = "cmX vs time"
-		elif self.dd1.key=="degree"	:
-			y2 = deg
-			l2 = "degree vs time"
-		else	:
-    			
-			y2 = deg0
-			l2 = "degree0 vs time"	
 
 		n1 = min(len(t), len(y1))
 		n2 = min(len(t), len(y2))
