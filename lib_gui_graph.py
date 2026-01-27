@@ -303,7 +303,7 @@ class GraphView:
 		if title:
 			screen.blit(self.font_small.render(title, True, border_color), (rect.x + 10, rect.y + 8))
 
-	def _plot_timeseries(self, screen, rect, t, y, label):
+	def _plot_timeseries(self, screen, rect, t, y, label, fixed_range=None):
 		if len(t) < 2:
 			return
 
@@ -328,9 +328,16 @@ class GraphView:
 		screen.blit(self.font_small.render(label, True, COLOR_TEXT), (rect.x + 10, rect.y + 26))
 
 		tmin, tmax = t[0], t[-1]
-		ymin, ymax = min(y), max(y)
-		if abs(ymax - ymin) < 1e-12:
-			ymax = ymin + 1.0
+		if fixed_range is not None:
+			ymin, ymax = fixed_range
+		else:
+			ymin, ymax = min(y), max(y)
+			if abs(ymax - ymin) < 1e-12:
+				ymax = ymin + 1.0
+
+		if ymin < 0 < ymax:
+			y_zero = y0 + h - int((-ymin) / (ymax - ymin) * h)
+			pygame.draw.line(screen, (120, 120, 120), (x0, y_zero), (x0 + w, y_zero), 1)
 
 		pts = []
 		for i in range(len(t)):
