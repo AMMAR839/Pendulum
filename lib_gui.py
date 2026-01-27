@@ -285,7 +285,7 @@ class PendulumGUI:
         pad_center_y = y + S(STARTRESET_Y_GAP_BASE + 120)
 
         r = S(24)
-        gap = S(48)
+        gap = S(50)
 
         self.xbox_buttons = {
             "Y": XboxButton(
@@ -305,6 +305,8 @@ class PendulumGUI:
                 r, "X", "SWING UP", (80, 150, 220)
             ),
         }
+
+        self.state_label = "IDLE"
 
 
     def set_gains_defaults(self, gains_dict):
@@ -415,6 +417,13 @@ class PendulumGUI:
 
         for btn in self.xbox_buttons.values():
             btn.draw(self.screen, self.font_medium, self.font_small)
+
+        label_y = max(btn.cy for btn in self.xbox_buttons.values()) + 80
+        label_x = self.MAIN_WIDTH + (self.PANEL_WIDTH // 2)
+
+        label_surf = self.font_medium.render(self.state_label, True, COLOR_TEXT)
+        label_rect = label_surf.get_rect(center=(label_x, label_y))
+        self.screen.blit(label_surf, label_rect)
 
         # acks
         if context.get("gains_sent", False):
