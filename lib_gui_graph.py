@@ -335,6 +335,23 @@ class GraphView:
 			if abs(ymax - ymin) < 1e-12:
 				ymax = ymin + 1.0
 
+		py_max = y0          # paling atas grafik
+		py_min = y0 + h      # paling bawah grafik
+
+		# render teks
+		txt_max = self.font_small.render(f"{ymax:.2f}", True, COLOR_TEXT)
+		txt_min = self.font_small.render(f"{ymin:.2f}", True, COLOR_TEXT)
+
+		# gambar di sumbu Y kiri (seperti MATLAB)
+		screen.blit(
+			txt_max,
+			(rect.x - txt_max.get_width() - 6, py_max - 8)
+		)
+		screen.blit(
+			txt_min,
+			(rect.x - txt_min.get_width() - 6, py_min - 8)
+		)
+		
 		if ymin < 0 < ymax:
 			y_zero = y0 + h - int((-ymin) / (ymax - ymin) * h)
 			pygame.draw.line(screen, (120, 120, 120), (x0, y_zero), (x0 + w, y_zero), 1)
