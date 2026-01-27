@@ -195,7 +195,7 @@ class PendulumMonitor:
 		self.r1_hist.clear()
 		self.theta_dot_hist.clear()
 		self.x_center_hist.clear()
-		
+
 	def on_control_status(self, sample_tuple):
 		logtick, degree, cmX, setspeed, r1, theta_dot, theta, x_center = sample_tuple
 		gv = getattr(self.gui, "graph_view", None)
@@ -218,6 +218,11 @@ class PendulumMonitor:
 			self.t_raw.append(float(logtick))
 			self.cmX_hist.append(float(cmX))
 			self.degree_hist.append(float(degree))
+			self.setspeed_hist.append(float(setspeed))
+			self.r1_hist.append(float(r1))
+			self.theta_dot_hist.append(float(theta_dot))
+			self.x_center_hist.append(float(x_center))
+			
 			degree0=float(degree+180)	
 			if(degree0>180):
 				degree0=degree0-360
@@ -229,6 +234,10 @@ class PendulumMonitor:
 			self.cmX_hist.clear()
 			self.degree_hist.clear()
 			self.degree0_hist.clear()
+			self.setspeed_hist.clear()
+			self.r1_hist.clear()
+			self.theta_dot_hist.clear()
+			self.x_center_hist.clear()
 		if len(self.t_raw) > self.max_hist:
 			
 			n = len(self.t_raw)
@@ -242,6 +251,10 @@ class PendulumMonitor:
 			del self.cmX_hist[:cut]
 			del self.degree_hist[:cut]
 			del self.degree0_hist[:cut]
+			del self.setspeed_hist[:cut]
+			del self.r1_hist[:cut]
+			del self.theta_dot_hist[:cut]
+			del self.x_center_hist[:cut]
 			aftercut = len(self.t_raw)
 			print(aftercut)
 			#self.t_raw = self.t_raw[-self.max_hist:]
