@@ -199,6 +199,7 @@ class PendulumMonitor:
 
 	def on_control_status(self, sample_tuple):
 		logtick, degree, cmX, setspeed, r1, theta_dot, theta, x_center, mode = sample_tuple
+		self.mode = mode
 		gv = getattr(self.gui, "graph_view", None)
 		with state_lock:
 			pendulum_state["cmX"] = cmX
@@ -423,7 +424,6 @@ class PendulumMonitor:
 					"B": self.finish,
 					"A": self.balance,
 					"X": self.swing_up,
-
 				}
 			)
 
@@ -434,6 +434,7 @@ class PendulumMonitor:
 				"reset_ack": reset_ack,
 				"cmX": cmX,
 				"theta": theta,
+				"mode": self.mode
 
 			}
 			graph_data = {
