@@ -435,8 +435,9 @@ class PendulumMonitor:
 				"cmX": cmX,
 				"theta": theta,
 				"mode": self.mode
-
 			}
+			#print(self.mode)
+
 			graph_data = {
 					"t_raw": self.t_raw,
 					"cmX": self.cmX_hist,

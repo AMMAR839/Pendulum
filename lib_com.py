@@ -142,7 +142,7 @@ def read_control_status(ser, callback=None, ack_callback=None, reset_ack_callbac
             time.sleep(0.01)
             continue
         buffer.extend(chunk)
-        print(f"[RX] Received {len(chunk)} bytes, buffer size: {len(buffer)} bytes")
+        #print(f"[RX] Received {len(chunk)} bytes, buffer size: {len(buffer)} bytes")
 
         # Process buffer
         while len(buffer) >= 4:  # minimal header length
@@ -180,20 +180,20 @@ def read_control_status(ser, callback=None, ack_callback=None, reset_ack_callbac
                 # Parse data
                 data = pkt[4:-2]
                 
-                print (pkt)
-                print (len(data))
+                #print (pkt)
+                #print (len(data))
                 unpacked = struct.unpack(fmt_status, data)
                 logtick = unpacked[0]
                 degree, cmX, setspeed = unpacked[1:4]
                 r1, r2, r3, r4, r5 = unpacked[4:9] #?
-                print (f"r5={r5}")
+                #print (f"r5={r5}")
                 
                 if debug:
                     print(f"[RX] tick={logtick:8d} deg={degree:8.3f} "
                           f"cmX={cmX:8.3f} set={setspeed:8.3f}")
                 
                 if callback is not None:
-                    callback((logtick, degree, cmX, setspeed, r1, r2, r3, r4))
+                    callback((logtick, degree, cmX, setspeed, r1, r2, r3, r4, r5))
             
             # Process Gains ACK
             elif first_idx == idx_ack:

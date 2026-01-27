@@ -443,6 +443,27 @@ class PendulumGUI:
         info_text = f"Position: {cmX:.1f} cm  |  Angle: {theta_deg:.2f}°"
         info_surf = self.font_medium.render(info_text, True, COLOR_TEXT)
         self.screen.blit(info_surf, (20, self.WINDOW_HEIGHT - 35))
+        mode = context.get("mode", 0)
+        print(mode)
+        if mode == 1:
+            self.state_label = "WAITING"
+        elif mode == 2:
+            self.state_label = "HOMING"
+        elif mode == 201:
+            self.state_label = "TO CENTER"
+        elif mode == 3:
+            self.state_label = "READY"
+        elif mode == 4:
+            self.state_label = "SINUS"
+        elif mode == 5:
+            self.state_label = "FINISH"
+        elif mode == 6:
+            self.state_label = "SWING UP"
+        elif mode == 7:
+            self.state_label = "BALANCING"
+        else:
+            self.state_label = "UNDEFINED"
+
 
         pygame.display.flip()
 
